@@ -7,7 +7,7 @@ let browser;
 (async() => {
   browser = await puppeteer.launch({
        headless: true,
-       //product: "chromium",
+       product: "chromium",
        executablePath: '/nix/store/v099qxf96q4cm 47kskh9j146jfyh058i-chromium-108.0.5359. 94-sandbox/bin/__chromium-suid-sandbox',
        args: [
        "--no-sandbox",
