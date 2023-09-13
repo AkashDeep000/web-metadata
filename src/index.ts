@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import "dotenv/config";
 import { bearerAuth } from "hono/bearer-auth";
 import puppeteer from "puppeteer-core";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import cheerio from "cheerio";
 import OpenAI from "openai";
 import { NodeHtmlMarkdown } from "node-html-markdown";
