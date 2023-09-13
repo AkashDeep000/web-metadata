@@ -12,8 +12,18 @@ import ogFields from "./utils/ogFields";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const app = new Hono();
+const app = new Hono
 
+//seting up Bearer auth
+const token = process.env.TOKEN;
+if (token) {
+  app.use("/", bearerAuth({ token }));
+}
+//route for ping the service
+app.get("/ping", (c) => {
+  return c.text("pong");
+});
+//main route
 app.get("/", async (c) => {
   const urlInput = c.req.query("url");
   const url = `${
@@ -133,8 +143,8 @@ app.get("/", async (c) => {
         metadata.ogImageSecureURL?.[0] ||
         metadata.twitterImage?.[0] ||
         metadata.twitterImageSrc?.[0],
-        summary: gptRes.summary,
-        tags: gptRes.tags,
+      summary: gptRes.summary,
+      tags: gptRes.tags,
     });
   } catch (error) {
     console.log(error);
