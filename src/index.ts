@@ -78,19 +78,19 @@ app.get("/", async (c) => {
     });
     const contentMarkdown = NodeHtmlMarkdown.translate(cleanHtml);
     //console.log(contentMarkdown);
-    const truncatedString = truncateStringToTokenCount(contentMarkdown, 3500);
+    const truncatedString = truncateStringToTokenCount(contentMarkdown, 2000);
 
     const prompt = [
       { role: "system", content: "You are a helpful assistant" },
       {
         role: "user",
         content:
-          "Can you help to create a 2 or 3 line seo description of the following website and identify only most relavent catagories for the website?",
+          "Can you help to create a 2 or 3 line seo description of the following website and identify only most relavent category tags (eg: SaaS, e-commerce, AI) for the website's product type?",
       },
       {
         role: "user",
         content:
-          "Return the response in json format with two fields: summary and catagories",
+          "Return the response in json format with two fields: summary and tags",
       },
       {
         role: "user",
@@ -98,9 +98,9 @@ app.get("/", async (c) => {
       },
       {
         role: "user",
-        content: `The title of the website is ${metadata.title || metadata.ogTitle || ""} ${
-          metadata.description || metadata.ogDescription || ""
-        }.`,
+        content: `The title of the website is ${
+          metadata.title || metadata.ogTitle || ""
+        } ${metadata.description || metadata.ogDescription || ""}.`,
       },
       {
         role: "user",
@@ -113,14 +113,35 @@ app.get("/", async (c) => {
       messages: prompt,
       temperature: 0.4,
     };
-    
+
     const completion = await openai.chat.completions.create(chatInput);
-    console.log(completion);
     const gptRes = JSON.parse(completion.choices[0].message.content);
-    return c.json({ ...metadata, ...gptRes });
+    if (!gptRes.summary && !gptRes.tags) {
+      return c.json(
+        { error: true, messages: "Got unexpected response from GPT" },
+        400
+      );
+    }
+    return c.json({
+      title: metadata.title || metadata.ogTitle,
+      description: metadata.description || metadata.ogDescription,
+      favicon: metadata.favicon,
+      logo: metadata.ogLogo,
+      socialImg:
+        metadata.ogImage?.[0] ||
+        metadata.ogImageURL?.[0] ||
+        metadata.ogImageSecureURL?.[0] ||
+        metadata.twitterImage?.[0] ||
+        metadata.twitterImageSrc?.[0],
+        summary: gptRes.summary,
+        tags: gptRes.tags,
+    });
   } catch (error) {
-    console.log(error)
-    return c.json({ error: true, message: error.error?.message || error.name || error }, 400);
+    console.log(error);
+    return c.json(
+      { error: true, message: error.error?.message || error.name || error },
+      500
+    );
   } finally {
     if (browser) {
       browser.close();
