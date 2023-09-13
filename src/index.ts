@@ -32,7 +32,7 @@ app.get("/", async (c) => {
     const page = await browser.newPage();
     const response = await page.goto(url, {
       waitUntil: "networkidle0",
-      timeout: 10000,
+      timeout: 30000,
     });
     const html = await page.evaluate(
       () => document.querySelector("*").outerHTML
@@ -120,7 +120,7 @@ app.get("/", async (c) => {
     return c.json({ ...metadata, ...gptRes });
   } catch (error) {
     console.log(error)
-    return c.json({ error: true, message: error.error.message }, 400);
+    return c.json({ error: true, message: error.error?.message || error.name || error }, 400);
   } finally {
     if (browser) {
       browser.close();
